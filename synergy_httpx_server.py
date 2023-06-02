@@ -177,7 +177,7 @@ def main():
 		server = Thread(target = httpd.serve_forever, args = ())
 		server.daemon = True
 		server.start()
-		print(f'[{INFO}] {protocol} server is up and running!')
+		print(f'{INFO} {protocol} server is up and running!')
 
 		try:
 			server_public_ip = check_output("curl --connect-timeout 3.14 -s ifconfig.me", shell = True).decode(sys.stdout.encoding)	
