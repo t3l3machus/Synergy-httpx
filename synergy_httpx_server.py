@@ -39,6 +39,7 @@ WARN = f'[{ORANGE}Warning{END}]'
 DBG = f'[{ORANGE}Debug{END}]'
 IMPORTANT = f'[{ORANGE}Important{END}]'
 FAILED = f'[{RED}Fail{END}]'
+POST_DATA = f'[{PURPLE}Post-data{END}]'
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--cert", action="store", help = "Your certificate.")
@@ -116,9 +117,9 @@ class Https_Server(BaseHTTPRequestHandler):
 				self.wfile.write(b'OK')
 				real_action = self.headers["Action"]
 				content_len = int(self.headers.get('Content-Length'))
-				form_attrs = {'Action':self.headers.get("X-form-action"), 'Method':self.headers.get("X-form-method"), 'Enctype':self.headers.get("X-form-enctype"), 'Encoding':self.headers.get("X-form-encoding")}
 				post_data = self.rfile.read(content_len)
-
+				print(f'{POST_DATA} Received from {self.client_address[0]}')
+				print(post_data.decode('utf-8', 'ignore').replace('<br>', '\n'))
 		except:
 			pass
 
