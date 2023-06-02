@@ -1,6 +1,6 @@
 #!/bin/python3
 #
-# Author by Panagiotis Chartas (t3l3machus)
+# Author: Panagiotis Chartas (t3l3machus)
 # https://github.com/t3l3machus
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -49,6 +49,24 @@ parser.add_argument("-f", "--file", action="store", help = "File to be served vi
 
 args = parser.parse_args()
 
+def haxor_print(text, leading_spaces = 0):
+
+	text_chars = list(text)
+	current, mutated = '', ''
+
+	for i in range(len(text)):
+		
+		original = text_chars[i]
+		current += original
+		mutated += f'\033[1;38;5;82m{text_chars[i].upper()}\033[0m'
+		print(f'\r{" " * leading_spaces}{mutated}', end = '')
+		sleep(0.05)
+		print(f'\r{" " * leading_spaces}{current}', end = '')
+		mutated = current
+
+	print(f'\r{" " * leading_spaces}{text}\n')
+
+
 def print_banner():
 
 	padding = '  '
@@ -60,7 +78,7 @@ def print_banner():
 	R = [['█', '▀','▀','▄', '░'], ['█', '▄','▄','▀','░'], ['▀', '░', '▀','▀','░']]
 	G = [['█','▀','▀','▀', '░'], ['█', '░','▀','▄' '░'], ['▀','▀','▀','▀','░']]
 	Y = [['█', '░','░','█','░'], ['█', '▄','▄','█','░'], ['▄','▄','▄','▀','░']]
-	H = [['░','░','░','█','░','░','░','░'], ['░','░','░','█', '▀','▀','█','░'], ['░','░','░','▀','░','░','▀','░']]
+	H = [['░','░','░','█','░','░','█','░'], ['░','░','░','█', '▀','▀','█','░'], ['░','░','░','▀','░','░','▀','░']]
 	T = [['▀', '█','▀','░'], ['░', '█','░','░'], ['░', '█','░','░']]
 	P = [['▄', '▀','▀','▄','░'], ['█', '▄','▄','█','░'], ['█','░','░','░','░']]
 	X = [['█','░','█'], ['▄', '▀','▄'], ['▀','░','▀']]
@@ -87,9 +105,11 @@ def print_banner():
 		init_color += 31
 
 		if charset < 2: final.append('\n   ')
-
+	
+	
 	print(f"   {''.join(final)}")
-	print(f'{END}{padding}                                               by t3l3machus\n')
+	haxor_print('by t3l3machus', 49)
+
 
 
 def print_green(msg):
