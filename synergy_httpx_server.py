@@ -49,6 +49,47 @@ parser.add_argument("-f", "--file", action="store", help = "File to be served vi
 
 args = parser.parse_args()
 
+def print_banner():
+
+	padding = '  '
+
+	S = [['░', '█','▀','▀', '░'], ['░', '▀','▀','▄', '░'], ['░', '▀','▀','▀', '░']]
+	Y = [['█', '░','░','█','░'], ['█', '▄','▄','█','░'], ['▄','▄','▄','▀','░']]
+	N = [['█', '▀','▀','▄', '░'], ['█', '░','░','█','░'], ['▀', '░','░','▀','░']]
+	E = [['█','▀','▀','▀', '░'], ['█','▀','▀','▀', '░'], ['▀','▀','▀', '▀', '░']]	
+	R = [['█', '▀','▀','▄', '░'], ['█', '▄','▄','▀','░'], ['▀', '░', '▀','▀','░']]
+	G = [['█','▀','▀','▀', '░'], ['█', '░','▀','▄' '░'], ['▀','▀','▀','▀','░']]
+	Y = [['█', '░','░','█','░'], ['█', '▄','▄','█','░'], ['▄','▄','▄','▀','░']]
+	H = [['░','░','░','█','░','░','░','░'], ['░','░','░','█', '▀','▀','█','░'], ['░','░','░','▀','░','░','▀','░']]
+	T = [['▀', '█','▀','░'], ['░', '█','░','░'], ['░', '█','░','░']]
+	P = [['▄', '▀','▀','▄','░'], ['█', '▄','▄','█','░'], ['█','░','░','░','░']]
+	X = [['█','░','█'], ['▄', '▀','▄'], ['▀','░','▀']]
+
+	banner = [S,Y,N,E,R,G,Y,H,T,T,P,X]
+	final = []
+	print('\r')
+	init_color = 31
+	txt_color = init_color
+	cl = 0
+
+	for charset in range(0, 3):
+		for pos in range(0, len(banner)):
+			for i in range(0, len(banner[pos][charset])):
+				clr = f'\033[38;5;{txt_color}m'
+				char = f'{clr}{banner[pos][charset][i]}'
+				final.append(char)
+				cl += 1
+				txt_color = txt_color + 36 if cl <= 3 else txt_color
+
+			cl = 0
+
+			txt_color = init_color
+		init_color += 31
+
+		if charset < 2: final.append('\n   ')
+
+	print(f"   {''.join(final)}")
+	print(f'{END}{padding}                                               by t3l3machus\n')
 
 
 def print_green(msg):
@@ -145,7 +186,7 @@ class Https_Server(BaseHTTPRequestHandler):
 
 
 def main():
-
+	print_banner()
 	try:
 		server_port = args.port if args.port else 443
 
