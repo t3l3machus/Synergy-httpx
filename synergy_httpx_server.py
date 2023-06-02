@@ -152,7 +152,7 @@ def main():
 			httpd = HTTPServer(('0.0.0.0', server_port), Https_Server)
 
 		except OSError:
-			exit(f'\n[{FAILED}] Port {server_port} seems to already be in use.{END}\n')
+			exit(f'\n{FAILED} Port {server_port} seems to already be in use.{END}\n')
 		
 		protocol = 'http'
 		
@@ -192,7 +192,7 @@ def main():
 		while True:
 			sleep(5)
 			
-	except KeyboardInterupt:
+	except KeyboardInterrupt:
 		exit(0)
 	
 	except Exception as e:
