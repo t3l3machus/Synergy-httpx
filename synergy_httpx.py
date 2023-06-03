@@ -5,6 +5,7 @@
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import ssl, sys, base64, re, os, argparse
+import netifaces as ni
 from warnings import filterwarnings
 from datetime import date, datetime
 from urllib.parse import unquote, urlparse
@@ -50,12 +51,28 @@ POST_REQ = f'[{PURPLE}POST-request{END}]'
 GET_REQ = f'[{BLUE}GET-request{END}]'
 META = '[\001\033[38;5;93m\002M\001\033[38;5;129m\002e\001\033[38;5;165m\002t\001\033[38;5;201m\002a\001\033[0m\002]'
 
+# Check interface
+def get_ip_from_iface(iface):
+	try:
+		# Check if valid interface
+		ip = ni.ifaddresses(iface)[ni.AF_INET][0]['addr']
+		return ip
+		
+	except:
+		return False
 
+
+def debug(msg):
+	print(f'{DBG} {msg}{END}')
+
+
+# Parse arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--cert", action="store", help = "Your certificate.")
 parser.add_argument("-k", "--key", action="store", help = "The private key for your certificate. ")
 parser.add_argument("-p", "--port", action="store", help = "Server port.", type = int)
 parser.add_argument("-q", "--quiet", action="store_true", help = "Do not print the banner on startup.")
+parser.add_argument("-i", "--interface", action="store", help = "Supply an interface to adjust the server URLs automatically to the corresponding IP address. If omitted, your public IP will be used instead.", type = str)
 
 args = parser.parse_args()
 
@@ -129,10 +146,6 @@ def print_meta():
 
 def print_green(msg):
 	print(f'{GREEN}{msg}{END}')
-
-
-def debug(msg):
-	print(f'{DBG} {msg}{END}')
 
 
 def failure(msg):
@@ -218,7 +231,8 @@ class Synergy_Httpx(BaseHTTPRequestHandler):
 	def get_endpoints():
 		endpoints = list(Synergy_Httpx.user_defined_endpoints['GET'].keys())\
 		+ list(Synergy_Httpx.user_defined_endpoints['POST'].keys())
-		return endpoints.extend([Synergy_Httpx.basic_endpoints['GET'], Synergy_Httpx.basic_endpoints['POST']])
+		endpoints.extend([Synergy_Httpx.basic_endpoints['GET'], Synergy_Httpx.basic_endpoints['POST']])
+		return endpoints
 
 
 	@staticmethod
@@ -636,57 +650,64 @@ def main():
 
 	print_banner() if not args.quiet else chill()
 
+	if args.interface:
+		server_public_ip = get_ip_from_iface(args.interface)
+
+		if not server_public_ip:
+			debug('Invalid interface.')
+			exit(1)
+	# try:
+	server_port = args.port if args.port else 8080
+
 	try:
-		server_port = args.port if args.port else 8080
+		httpd = HTTPServer(('0.0.0.0', server_port), Synergy_Httpx)
 
+	except OSError:
+		exit(f'\n{FAILED} Port {server_port} seems to already be in use.{END}\n')
+	
+	protocol = 'http'
+	
+	if args.cert and args.key:
+		
 		try:
-			httpd = HTTPServer(('0.0.0.0', server_port), Synergy_Httpx)
-
-		except OSError:
-			exit(f'\n{FAILED} Port {server_port} seems to already be in use.{END}\n')
-		
-		protocol = 'http'
-		
-		if args.cert and args.key:
+			httpd.socket = ssl.wrap_socket (
+				httpd.socket,
+				keyfile = args.key,
+				certfile = args.cert,
+				server_side = True,
+				ssl_version=ssl.PROTOCOL_TLS
+			)
 			
-			try:
-				httpd.socket = ssl.wrap_socket (
-					httpd.socket,
-					keyfile = args.key,
-					certfile = args.cert,
-					server_side = True,
-					ssl_version=ssl.PROTOCOL_TLS
-				)
-				
-				protocol = 'https'
-				
-			except Exception as e:
-				debug(f'Failed to establish SSL: {e}')
-				exit(1)
-		
+			protocol = 'https'
 			
-		server = Thread(target = httpd.serve_forever, args = ())
-		server.daemon = True
-		server.start()
-		print(f'[{ORANGE}0.0.0.0{END}:{ORANGE}{server_port}{END}] Synergy {protocol} server is up and running!')
+		except Exception as e:
+			debug(f'Failed to establish SSL: {e}')
+			exit(1)
+	
+		
+	server = Thread(target = httpd.serve_forever, args = ())
+	server.daemon = True
+	server.start()
+	print(f'[{ORANGE}0.0.0.0{END}:{ORANGE}{server_port}{END}] Synergy {protocol} server is up and running!')
 
+	if not args.interface:
 		try:
 			server_public_ip = check_output("curl --connect-timeout 3.14 -s ifconfig.me", shell = True).decode(sys.stdout.encoding)	
 			
 		except:
 			server_public_ip = '127.0.0.1'
 			pass
-		
-		for key,val in Synergy_Httpx.basic_endpoints.items():
-			print(f'{INFO} Basic {key} endpoint: {protocol}://{server_public_ip}:{server_port}/{val}')
-
-
-	except KeyboardInterrupt:
-		exit(0)
 	
-	except Exception as e:
-		debug(f'Something went wrong: {e}')
-		exit(1)	
+	for key,val in Synergy_Httpx.basic_endpoints.items():
+		print(f'{INFO} Basic {key} endpoint: {protocol}://{server_public_ip}:{server_port}/{val}')
+
+
+	# except KeyboardInterrupt:
+	# 	exit(0)
+	
+	# except Exception as e:
+	# 	debug(f'Something went wrong: {e}')
+	# 	exit(1)	
 
 	
 	''' Start tab autoComplete '''
@@ -783,12 +804,12 @@ def main():
 				elif cmd == 'endpoints':
 					print(f'\n{BOLD}Basic endpoints{END}:')
 					for method in Synergy_Httpx.basic_endpoints.keys():
-						print(f'/{Synergy_Httpx.basic_endpoints[method]} ({method})')
+						print(f'{protocol}://{server_public_ip}/{Synergy_Httpx.basic_endpoints[method]} ({method})')
 
 					print(f'\n{BOLD}User Defined{END}:')
 					for method in Synergy_Httpx.user_defined_endpoints.keys():
 						for key,value in Synergy_Httpx.user_defined_endpoints[method].items():
-							print(f'/{key} : {value} ({method})')
+							print(f'{protocol}://{server_public_ip}/{key} -> {value} ({method})')
 					print('')
 
 
@@ -808,9 +829,11 @@ def main():
 			choice = input('\nAre you sure you wish to exit? [y/n]: ').lower().strip()
 			verified = True if choice in ['yes', 'y'] else False
 										
-			if verified:								
+			if verified:
+				print('')						
 				print_meta()
 				sys.exit(0)			
+
 
 
 if __name__ == '__main__':
