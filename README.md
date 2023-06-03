@@ -13,3 +13,6 @@ I find this tool handy when working with rubber ducky / bad USB / ATtiny85, etc 
 
 
 ## Installation
+```
+pip3 install -r requirements.txt
+```
