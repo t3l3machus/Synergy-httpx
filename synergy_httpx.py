@@ -72,7 +72,7 @@ parser.add_argument("-c", "--cert", action="store", help = "Your certificate.")
 parser.add_argument("-k", "--key", action="store", help = "The private key for your certificate. ")
 parser.add_argument("-p", "--port", action="store", help = "Server port.", type = int)
 parser.add_argument("-q", "--quiet", action="store_true", help = "Do not print the banner on startup.")
-parser.add_argument("-i", "--interface", action="store", help = "Supply an interface to adjust the server URLs automatically to the corresponding IP address. If omitted, your public IP will be used instead.", type = str)
+parser.add_argument("-i", "--interface", action="store", help = "Supply an interface to adjust the server URLs listing automatically to its corresponding IP address. If omitted, your public IP will be used instead.", type = str)
 
 args = parser.parse_args()
 
@@ -107,7 +107,7 @@ def print_banner():
 	Y = [['█', '░','░','█','░'], ['█', '▄','▄','█','░'], ['▄','▄','▄','▀','░']]
 	H = [['░','░','█','░','░','█','░'], ['░','░','█', '█','▀','█','░'], ['░','░','█','░','░','█','░']]
 	T = [['▀', '█','▀','░'], ['░', '█','░','░'], ['░', '█','░','░']]
-	P = [['▄', '▀','▀','▄','░'], ['█', '▄','▄','█','░'], ['█','░','░','░','░']]
+	P = [['█', '▀','▀','▄','░'], ['█', '▄','▄','█','░'], ['█','░','░','░','░']]
 	X = [['█','░','░','█'], [' ', '▀','▄',''], ['█','░','░','█']]
 
 	banner = [S,Y,N,E,R,G,Y,H,T,T,P,X]
