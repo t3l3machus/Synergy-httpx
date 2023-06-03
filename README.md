@@ -10,6 +10,7 @@ A Python http(s) server designed to assist in red teaming activities such as rec
 I find this tool handy when working with rubber ducky / bad USB / ATtiny85, etc based attacks. Check out the `ATtiny85_templates` folder for some handy `.ino` templates to load on your microcontroller. Credits: My templates are inspired by this repo -> [CedArctic/DigiSpark-Scripts](https://github.com/CedArctic/DigiSpark-Scripts/).
 
 ## Preview
+![image](https://github.com/t3l3machus/Synergy-httpx/assets/75489922/3d6f49b1-1b2d-44d9-b17a-3c9c41cf9e62)
 
 
 ## Installation
