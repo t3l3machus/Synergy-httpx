@@ -14,6 +14,7 @@ I find this tool handy when working with rubber ducky / bad USB / ATtiny85, etc 
 
 
 ## Installation
+This tool was explicitly developed and tested on kali linux. I doubt it will work properly on Windows.
 ```
 pip3 install -r requirements.txt
 ```
@@ -23,6 +24,7 @@ pip3 install -r requirements.txt
 python3 synergy_httpx.py [-h] [-c CERT] [-k KEY] [-p PORT] [-q] [-i INTERFACE]
 ```  
 
- - If you provide cert.pem and key.pem files when you execute `synergy_httpx.py`, it will run with SSL. You can use the "serve" and "release" prompt commands to associate server path names with local files to be used as a response body to GET/POST requests, while the server is running.  
-  
+ - If you provide cert.pem and key.pem files when you execute `synergy_httpx.py`, the server will run with SSL (https). 
+ - You can use the "serve" and "release" prompt commands to associate/disassociate server path names with local files to be used as a response body to GET/POST requests, while the server is running. There are two standard hardcoded endpoints, 1 x GET mainly for connectivity tests and 1 x POST that will print the request body to the stdout, useful for intercepting data and sending them to your server via http(s).  
  - You can predifine endpoints (server paths mapped to local files) by editting the `user_defined_endpoints` dict in `synergy_httpx.py` (there are examples).
+ - Use the "endpoints" prompt command to list all of the server's active endpoints.
