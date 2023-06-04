@@ -4,23 +4,16 @@
 # https://github.com/t3l3machus
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
-import ssl, sys, base64, re, os, argparse
+import gnureadline as global_readline
+import ssl, sys, re, os, argparse
 import netifaces as ni
 from warnings import filterwarnings
 from datetime import date, datetime
-from urllib.parse import unquote, urlparse
 from threading import Thread
-from io import StringIO
 from time import sleep
 from subprocess import check_output
-from string import ascii_uppercase, ascii_lowercase, digits
-from platform import system as get_system_type
 from copy import deepcopy
 
-if get_system_type() == 'Linux':
-	import gnureadline as global_readline
-else:
-	import readline as global_readline
 
 filterwarnings("ignore", category = DeprecationWarning)
 
@@ -205,6 +198,26 @@ def get_file_contents(path):
 		return [False, e]
 
 
+def get_dt_prefix():
+	
+	now = datetime.now()
+	today = date.today()
+	current_time = now.strftime("%H:%M:%S")
+	#datetime_prefix = f'{today.strftime("%Y-%m-%d")} {current_time}'   # Full datetime
+	datetime_prefix = [today.strftime("%Y-%m-%d"), current_time][1]
+	return datetime_prefix
+
+
+def is_valid_directory_part(s):
+
+    pattern = r'^[a-zA-Z0-9-._~%!$&\'()*+,;=:@\/]*$'
+    
+    if re.match(pattern, s):
+        return True
+
+    return False
+
+
 def chill():
 	pass
 
@@ -256,13 +269,13 @@ class Synergy_Httpx(BaseHTTPRequestHandler):
 				self.send_header('Access-Control-Allow-Origin', '*')
 				self.end_headers()
 				
-				print_to_prompt(f'{GET_REQ} Received for {ORANGE}{self.path}{END} from {ORANGE}{self.client_address[0]}{END}')
+				print_to_prompt(f'[{get_dt_prefix()}]{GET_REQ} Received for {ORANGE}{self.path}{END} from {ORANGE}{self.client_address[0]}{END}')
 				
 				if	response_body:
 					content = get_file_contents(response_body)
 
 					if not content[0]:
-						print_to_prompt(f'{FAILED} An error occured while reading the file associated with server path {ORANGE}{self.path}{END} ({content[1]})')
+						print_to_prompt(f'[{get_dt_prefix()}]{FAILED} An error occured while reading the file associated with server path {ORANGE}{self.path}{END} ({content[1]})')
 						content = [0, ""]
 
 				else:
@@ -289,7 +302,7 @@ class Synergy_Httpx(BaseHTTPRequestHandler):
 
 				content_len = int(self.headers.get('Content-Length'))
 				post_data = self.rfile.read(content_len)
-				print_to_prompt(f'{POST_REQ} Received for {ORANGE}{self.path}{END} from {ORANGE}{self.client_address[0]}{END}')
+				print_to_prompt(f'[{get_dt_prefix()}]{POST_REQ} Received for {ORANGE}{self.path}{END} from {ORANGE}{self.client_address[0]}{END}')
 				print_to_prompt(post_data.decode('utf-8', 'ignore').replace('<br>', '\n'))
 				self.wfile.write(b'OK')
 
@@ -297,7 +310,7 @@ class Synergy_Httpx(BaseHTTPRequestHandler):
 					content = get_file_contents(response_body)
 
 					if not content[0]:
-						print_to_prompt(f'{FAILED} An error occured while reading the file associated with server path {ORANGE}{self.path}{END} ({content[1]})')
+						print_to_prompt(f'[{get_dt_prefix()}]{FAILED} An error occured while reading the file associated with server path {ORANGE}{self.path}{END} ({content[1]})')
 						content = [None, ""]
 
 			else:
@@ -337,7 +350,7 @@ class PrompHelp:
 			'details' : f'''
 			\rCreates a mapping between an server path name and a local file to serve.
 			\r
-			\r {ORANGE}serve <GET|POST> <HTTP PATH NAME> <LOCAL FILE PATH>{END}
+			\r{ORANGE}serve <GET|POST> <HTTP PATH NAME> <LOCAL FILE PATH>{END}
 			''',
 			'least_args' : 3,
 			'max_args' : 3
@@ -346,9 +359,9 @@ class PrompHelp:
 
 		'release' : {
 			'details' : f'''
-			\rRemove a resource mapping (stop serving it).
+			\rRemove a resource mapping from the user defined endpoints (stop serving it).
 			\r
-			\r {ORANGE}release <HTTP PATH NAME>{END}
+			\r{ORANGE}release <HTTP PATH NAME>{END}
 			''',
 			'least_args' : 1,
 			'max_args' : 1
@@ -398,8 +411,8 @@ class PrompHelp:
 		\r  Command              Description
 		\r  -------              -----------
 		\r  help         [+]     Print this message.
-		\r  serve        [+]     Add a resource to the synergy server's content.
-		\r  release      [+]     Remove a resource from the synergy server's content.
+		\r  serve        [+]     Add an endpoint to the synergy server's contents.
+		\r  release      [+]     Remove an endpoint from the synergy server's contents.
 		\r  endpoints            List all hosted resources.
 		\r  clear                Clear screen.
 		\r  exit                 Terminate the synergy server.
@@ -656,58 +669,58 @@ def main():
 		if not server_public_ip:
 			debug('Invalid interface.')
 			exit(1)
-	# try:
-	server_port = args.port if args.port else 8080
-
 	try:
-		httpd = HTTPServer(('0.0.0.0', server_port), Synergy_Httpx)
+		server_port = args.port if args.port else 8080
 
-	except OSError:
-		exit(f'\n{FAILED} Port {server_port} seems to already be in use.{END}\n')
-	
-	protocol = 'http'
-	
-	if args.cert and args.key:
-		
 		try:
-			httpd.socket = ssl.wrap_socket (
-				httpd.socket,
-				keyfile = args.key,
-				certfile = args.cert,
-				server_side = True,
-				ssl_version=ssl.PROTOCOL_TLS
-			)
-			
-			protocol = 'https'
-			
-		except Exception as e:
-			debug(f'Failed to establish SSL: {e}')
-			exit(1)
-	
+			httpd = HTTPServer(('0.0.0.0', server_port), Synergy_Httpx)
+
+		except OSError:
+			exit(f'\n{FAILED} Port {server_port} seems to already be in use.{END}\n')
 		
-	server = Thread(target = httpd.serve_forever, args = ())
-	server.daemon = True
-	server.start()
-	print(f'[{ORANGE}0.0.0.0{END}:{ORANGE}{server_port}{END}] Synergy {protocol} server is up and running!')
-
-	if not args.interface:
-		try:
-			server_public_ip = check_output("curl --connect-timeout 3.14 -s ifconfig.me", shell = True).decode(sys.stdout.encoding)	
+		protocol = 'http'
+		
+		if args.cert and args.key:
 			
-		except:
-			server_public_ip = '127.0.0.1'
-			pass
-	
-	for key,val in Synergy_Httpx.basic_endpoints.items():
-		print(f'{INFO} Basic {key} endpoint: {protocol}://{server_public_ip}:{server_port}/{val}')
+			try:
+				httpd.socket = ssl.wrap_socket (
+					httpd.socket,
+					keyfile = args.key,
+					certfile = args.cert,
+					server_side = True,
+					ssl_version=ssl.PROTOCOL_TLS
+				)
+				
+				protocol = 'https'
+				
+			except Exception as e:
+				debug(f'Failed to establish SSL: {e}')
+				exit(1)
+		
+			
+		server = Thread(target = httpd.serve_forever, args = ())
+		server.daemon = True
+		server.start()
+		print(f'[{get_dt_prefix()}][{ORANGE}0.0.0.0{END}:{ORANGE}{server_port}{END}] Synergy {protocol} server is up and running!')
+
+		if not args.interface:
+			try:
+				server_public_ip = check_output("curl --connect-timeout 3.14 -s ifconfig.me", shell = True).decode(sys.stdout.encoding)	
+				
+			except:
+				server_public_ip = '127.0.0.1'
+				pass
+		
+		for key,val in Synergy_Httpx.basic_endpoints.items():
+			print(f'[{get_dt_prefix()}]{INFO} Basic {key} endpoint: {protocol}://{server_public_ip}:{server_port}/{val}')
 
 
-	# except KeyboardInterrupt:
-	# 	exit(0)
+	except KeyboardInterrupt:
+		exit(0)
 	
-	# except Exception as e:
-	# 	debug(f'Something went wrong: {e}')
-	# 	exit(1)	
+	except Exception as e:
+		debug(f'Something went wrong: {e}')
+		exit(1)	
 
 	
 	''' Start tab autoComplete '''
@@ -780,6 +793,11 @@ def main():
 						print('This endpoint is already mapped to a resource.')
 						continue					   
 					
+					# Check if the endpoint includes illegal characters
+					if not is_valid_directory_part(cmd_list[2]):
+						print(f'The path name {cmd_list[2]} includes illegal characters.')
+						continue						
+
 					# Check if path to local file is valid
 					if not os.path.isfile(cmd_list[3]):
 						print('File not found.')
@@ -804,12 +822,12 @@ def main():
 				elif cmd == 'endpoints':
 					print(f'\n{BOLD}Basic endpoints{END}:')
 					for method in Synergy_Httpx.basic_endpoints.keys():
-						print(f'{protocol}://{server_public_ip}/{Synergy_Httpx.basic_endpoints[method]} ({method})')
+						print(f'{protocol}://{server_public_ip}:{server_port}/{Synergy_Httpx.basic_endpoints[method]} ({method})')
 
 					print(f'\n{BOLD}User Defined{END}:')
 					for method in Synergy_Httpx.user_defined_endpoints.keys():
 						for key,value in Synergy_Httpx.user_defined_endpoints[method].items():
-							print(f'{protocol}://{server_public_ip}/{key} -> {value} ({method})')
+							print(f'{protocol}://{server_public_ip}:{server_port}/{key} -> {value} ({method})')
 					print('')
 
 
