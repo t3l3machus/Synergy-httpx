@@ -7,7 +7,9 @@
 ## Purpose
 A Python http(s) server designed to assist in red teaming activities such as receiving intercepted data via POST requests and serving content dynamically (e.g. payloads). 
   
-I find this tool handy when performing USB-based attacks during physical pentests (Rubber ducky / BadUSB / ATtiny85, etc). Check out the `ATtiny85_templates` folder for some handy `.ino` templates to load on your microcontrollers. Credits: My templates are inspired by this repo -> [CedArctic/DigiSpark-Scripts](https://github.com/CedArctic/DigiSpark-Scripts/).
+I find this tool handy when performing USB-based attacks during physical pentests (Rubber ducky / BadUSB / ATtiny85, etc). Check out the `ATtiny85_templates` folder for some handy `.ino` templates to load on your microcontrollers. Credits: My templates are inspired by this repo -> [CedArctic/DigiSpark-Scripts](https://github.com/CedArctic/DigiSpark-Scripts/).  
+  
+🎥 [How to turn your ATtiny85 into a rubber ducky ](https://www.youtube.com/watch?v=1l5UlG_R_Fc)
 
 ## Preview
 ![image](https://github.com/t3l3machus/Synergy-httpx/assets/75489922/3d6f49b1-1b2d-44d9-b17a-3c9c41cf9e62)
