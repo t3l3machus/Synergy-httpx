@@ -12,7 +12,7 @@ I find this tool handy when performing USB-based attacks during physical pentest
 🎥 [How to turn your ATtiny85 into a rubber ducky ](https://www.youtube.com/watch?v=1l5UlG_R_Fc)
 
 ## Preview
-![image](https://github.com/t3l3machus/Synergy-httpx/assets/75489922/3d6f49b1-1b2d-44d9-b17a-3c9c41cf9e62)
+![image](https://github.com/t3l3machus/Synergy-httpx/assets/75489922/da99aaf9-b385-4f33-931e-db6a01dd16b1)
 
 
 ## Installation
