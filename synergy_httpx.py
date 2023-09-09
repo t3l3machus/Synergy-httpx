@@ -186,14 +186,31 @@ def print_columns(strings):
 	print('\n', end='')
 
 
-def get_file_contents(path):
+def is_binary(path):
+	try:
+		with open(path, 'tr') as check_file:
+			check_file.read()
+			return False
+	except:
+		return True
 
+
+def get_file_contents(path):
 	try:
 		f = open(path, 'r')
 		content = f.read()
 		f.close()
 		return [True, content]
-	
+	except Exception as e:
+		return [False, e]
+
+
+def get_bin_contents(path):
+	try:
+		f = open(path, 'rb')
+		content = f.read()
+		f.close()
+		return [True, content]
 	except Exception as e:
 		return [False, e]
 
@@ -262,26 +279,50 @@ class Synergy_Httpx(BaseHTTPRequestHandler):
 			response_body = Synergy_Httpx.get_endpoint_local_path(self.path[1:], 'GET')
 			
 			if self.path == f'/{self.basic_endpoints["GET"]}' or response_body:
-				self.server_version = "Apache/2.4.1"
-				self.sys_version = ""
-				self.send_response(200)
-				self.send_header('Content-type', 'text/javascript; charset=UTF-8')
-				self.send_header('Access-Control-Allow-Origin', '*')
-				self.end_headers()
-				
-				print_to_prompt(f'[{get_dt_prefix()}]{GET_REQ} Received for {ORANGE}{self.path}{END} from {ORANGE}{self.client_address[0]}{END}')
-				
-				if	response_body:
-					content = get_file_contents(response_body)
-
-					if not content[0]:
-						print_to_prompt(f'[{get_dt_prefix()}]{FAILED} An error occured while reading the file associated with server path {ORANGE}{self.path}{END} ({content[1]})')
-						content = [0, ""]
-
-				else:
-					content = [None, "Move on mate."]
+				if is_binary(response_body):
+					self.server_version = "Apache/2.4.1"
+					self.sys_version = ""
+					self.send_response(200)
+					self.send_header('Content-type', 'application/octet-stream')
 					
-				self.wfile.write(bytes(content[1], "utf-8"))
+					print_to_prompt(f'[{get_dt_prefix()}]{GET_REQ} Received for {ORANGE}{self.path}{END} from {ORANGE}{self.client_address[0]}{END}')
+					
+					if	response_body:
+						output_data = get_bin_contents(response_body)
+	
+						if not output_data[0]:
+							print_to_prompt(f'[{get_dt_prefix()}]{FAILED} An error occured while reading the file associated with server path {ORANGE}{self.path}{END} ({output_data[1]})')
+							output_data = [0, ""]
+	
+					else:
+						output_data = [None, "Move on mate."]
+
+					self.send_header("Content-Length", str(len(output_data)))
+					self.send_header('Access-Control-Allow-Origin', '*')
+					self.end_headers()
+						
+					self.wfile.write(output_data[1])
+				else:
+					self.server_version = "Apache/2.4.1"
+					self.sys_version = ""
+					self.send_response(200)
+					self.send_header('Content-type', 'text/javascript; charset=UTF-8')
+					self.send_header('Access-Control-Allow-Origin', '*')
+					self.end_headers()
+
+					print_to_prompt(f'[{get_dt_prefix()}]{GET_REQ} Received for {ORANGE}{self.path}{END} from {ORANGE}{self.client_address[0]}{END}')
+
+					if	response_body:
+						content = get_file_contents(response_body)
+
+						if not content[0]:
+							print_to_prompt(f'[{get_dt_prefix()}]{FAILED} An error occured while reading the file associated with server path {ORANGE}{self.path}{END} ({content[1]})')
+							content = [0, ""]
+
+					else:
+						content = [None, "Move on mate."]
+
+					self.wfile.write(bytes(content[1], "utf-8"))
 		except:
 			pass
 				
